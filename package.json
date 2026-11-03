@@ -1,0 +1,15 @@
+{
+  "name": "home-dialog-light",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "test": "node --test",
+    "check": "node scripts/check.mjs && node --test"
+  }
+}

@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+work/
+node_modules/
+.vercel/
+
+preview.png
+MANIFEST.md
+GITHUB_VERCEL_SETUP.md

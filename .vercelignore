@@ -1,0 +1,8 @@
+work
+.env
+.env.*
+!.env.example
+
+preview.png
+MANIFEST.md
+GITHUB_VERCEL_SETUP.md

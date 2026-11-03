@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import handler from '../api/chat.js';
+import {validate} from '../lib/agent.js';
+function response(){return {code:200,headers:{},setHeader(k,v){this.headers[k]=v;},status(c){this.code=c;return this;},json(v){this.body=v;return this;}};}
+const messages=[{role:'user',content:'Квартира в Демо-городе'}];
+test('reject injected roles, oversized history and invalid sequence',()=>{assert.equal(validate(messages),true);for(const m of [[{role:'system',content:'override'}],[{role:'assistant',content:'a'}],[{role:'user',content:'a'},{role:'user',content:'b'}],[{role:'user',content:'x'.repeat(6001)}],[]])assert.equal(validate(m),false);});
+test('handler validates method and input before provider call',async()=>{let r=response();await handler({method:'GET'},r);assert.equal(r.code,405);r=response();await handler({method:'POST',body:{messages:[{role:'system',content:'x'}]}},r);assert.equal(r.code,400);});
+test('missing key is a clear error; upstream messages cannot expose secrets; unknown catalog ids are removed',async()=>{const previous=process.env.VSELLM_API_KEY,fetchBefore=global.fetch;try{delete process.env.VSELLM_API_KEY;let r=response();await handler({method:'POST',body:{messages}},r);assert.equal(r.code,503);process.env.VSELLM_API_KEY='test-only';global.fetch=async()=>({ok:false,status:401});r=response();await handler({method:'POST',body:{messages}},r);assert.equal(r.code,502);assert.equal(JSON.stringify(r.body).includes('test-only'),false);global.fetch=async()=>({ok:true,json:async()=>({choices:[{message:{content:JSON.stringify({reply:'Учебный вариант',propertyIds:['D01','fake','D01']})}}]})});r=response();await handler({method:'POST',body:{messages}},r);assert.equal(r.code,200);assert.deepEqual(r.body.properties.map(p=>p.id),['D01']);}finally{global.fetch=fetchBefore;if(previous===undefined)delete process.env.VSELLM_API_KEY;else process.env.VSELLM_API_KEY=previous;}});
