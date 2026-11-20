@@ -1,4 +1,5 @@
 work
+dist
 .env
 .env.*
 !.env.example

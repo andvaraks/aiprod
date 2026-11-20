@@ -1,10 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "outputDirectory": "public",
+  "outputDirectory": "dist",
   "functions": {
     "api/chat.js": {
       "maxDuration": 60
     }
   },
-  "buildCommand": "npm run check"
+  "buildCommand": "npm run check && npm run build"
 }
