@@ -19,11 +19,11 @@ npm run dev
 npm run check
 ```
 
-Проверяются синтаксис JavaScript, JSON-конфигурация и серверные тесты. GitHub Actions запускает job `quality` на push в main и на pull request. Настоящие запросы к LLM в CI не выполняются, ключ для CI не нужен. Vercel запускает те же проверки как Build Command; при ошибке новый deployment не публикуется.
+Проверяются синтаксис JavaScript, JSON-конфигурация и серверные тесты. GitHub Actions запускает job `quality` на push в любую ветку и на pull request. Настоящие запросы к LLM в CI не выполняются, ключ для CI не нужен. Vercel запускает те же проверки как Build Command; при ошибке новый deployment не публикуется.
 
 ## Vercel
 
-Импортируйте репозиторий. Framework: Other; Root Directory: `.`; Output Directory: `public`; Build Command: `npm run check`; Node.js: 24.x. Значения build/output уже заданы в vercel.json.
+Импортируйте репозиторий. Framework: Other; Root Directory: `.`; Output Directory: `dist`; Build Command: `npm run check && npm run build`; Node.js: 24.x. Значения build/output уже заданы в vercel.json.
 
 В Environment Variables добавьте:
 - `VSELLM_API_KEY` — Secret, значение ключа VseLLM; Production и при необходимости Preview.
@@ -41,3 +41,5 @@ npm run check
 - .github/workflows/ci.yml — GitHub Actions.
 
 Объекты каталога учебные, не реальные объявления. Веб-поиска нет. Подбор выполняет модель; точность оценивалась на учебных сценариях. Пример: покупка в Демо-городе, 2 комнаты, до 8 млн → D01; снижение бюджета до 6 млн → подходящих вариантов нет.
+
+При наличии нескольких карточек в одном ответе можно отсортировать их по убыванию площади или восстановить порядок консультанта.

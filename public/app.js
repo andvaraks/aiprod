@@ -1,7 +1,26 @@
+import { sortProperties } from './property-sort.js';
 const $=s=>document.querySelector(s);let history=[],busy=false,failed=false;
 const input=$('#input'),send=$('#send'),messages=$('#messages');
 function el(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
-function render(role,text,properties=[]){const wrap=el('article',undefined,'message '+role);wrap.append(el('div',role==='user'?'ВЫ':'БЛИЖЕ · AI-КОНСУЛЬТАНТ','who'),el('div',text));if(properties.length){const cards=el('div',undefined,'cards');for(const p of properties){const card=el('section',undefined,'card');card.append(el('div','УЧЕБНЫЙ ОБЪЕКТ · '+p.id,'tag'),el('h3',p.title),el('div',p.city+' · '+p.district,'details'),el('div',new Intl.NumberFormat('ru-RU').format(p.price)+' ₽'+(p.transaction==='rent'?' / мес.':''),'price'),el('div',`${p.rooms} комн. · ${p.area} м²`,'details'),el('p',p.description));cards.append(card);}wrap.append(cards);}messages.append(wrap);wrap.scrollIntoView({behavior:'smooth',block:'start'});}
+function render(role,text,properties=[]){const wrap=el('article',undefined,'message '+role);wrap.append(el('div',role==='user'?'ВЫ':'БЛИЖЕ · AI-КОНСУЛЬТАНТ','who'),el('div',text));if(properties.length){const cards=el('div',undefined,'cards');const renderCards = order => {
+  cards.replaceChildren();
+  for (const p of sortProperties(properties, order)) {const card=el('section',undefined,'card');card.append(el('div','УЧЕБНЫЙ ОБЪЕКТ · '+p.id,'tag'),el('h3',p.title),el('div',p.city+' · '+p.district,'details'),el('div',new Intl.NumberFormat('ru-RU').format(p.price)+' ₽'+(p.transaction==='rent'?' / мес.':''),'price'),el('div',`${p.rooms} комн. · ${p.area} м²`,'details'),el('p',p.description));cards.append(card);
+  }
+};
+renderCards('original');
+if (properties.length > 1) {
+  const label = el('label', 'Порядок карточек ');
+  const select = el('select');
+  for (const [value, title] of [['original', 'Как подобрал консультант'], ['area-desc', 'Сначала просторные']]) {
+    const option = el('option', title);
+    option.value = value;
+    select.append(option);
+  }
+  select.addEventListener('change', () => renderCards(select.value));
+  label.append(select);
+  wrap.append(label);
+}
+wrap.append(cards);}messages.append(wrap);wrap.scrollIntoView({behavior:'smooth',block:'start'});}
 function lock(value){busy=value;send.disabled=value||failed;input.disabled=value||failed;$('#reset').disabled=value;document.querySelectorAll('[data-prompt]').forEach(b=>b.disabled=value||failed);$('#retry').disabled=value;$('#status').textContent=value?'Консультант обдумывает ваш запрос…':'';}
 async function ask(text,retry=false){if(busy)return;if(!retry){if(history.length>=28){$('#status').textContent='Достигнут лимит диалога. Начните новый чат.';return;}history.push({role:'user',content:text});render('user',text);input.value='';}$('#error').hidden=true;lock(true);try{const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history}),signal:AbortSignal.timeout(58000)});const data=await response.json();if(!response.ok)throw Error(data.error||'Ошибка сервера');history.push({role:'assistant',content:data.reply});render('assistant',data.reply,data.properties);failed=false;}catch(e){failed=true;$('#error span').textContent=e.name==='TimeoutError'?'Время ожидания истекло. Повторите запрос.':e.message;$('#error').hidden=false;}finally{lock(false);if(!failed)input.focus();}}
 $('#form').addEventListener('submit',e=>{e.preventDefault();const text=input.value.trim();if(text&&!failed)ask(text);});input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();$('#form').requestSubmit();}});document.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>ask(b.dataset.prompt)));$('#retry').addEventListener('click',()=>ask('',true));$('#reset').addEventListener('click',()=>{history=[];failed=false;messages.replaceChildren();$('#error').hidden=true;lock(false);input.value='';input.focus();});

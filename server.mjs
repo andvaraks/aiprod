@@ -13,7 +13,7 @@ const server=http.createServer(async(req,res)=>{
  if(url.pathname==='/api/chat'){
  let body='';try{for await(const chunk of req){body+=chunk;if(Buffer.byteLength(body)>100000)return res.status(413).json({error:'РЎР»РёС€РєРѕРј Р±РѕР»СЊС€РѕР№ Р·Р°РїСЂРѕСЃ.'});}req.body=body?JSON.parse(body):{};}catch{return res.status(400).json({error:'РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ JSON.'});}return chat(req,res);
  }
- const assets={'/':['index.html','text/html'],'/style.css':['style.css','text/css'],'/app.js':['app.js','text/javascript']};
+ const assets={'/property-sort.js':['property-sort.js','text/javascript'],'/':['index.html','text/html'],'/style.css':['style.css','text/css'],'/app.js':['app.js','text/javascript']};
  const asset=assets[url.pathname];if(!asset){res.statusCode=404;return res.end('Not found');}
  try{res.setHeader('Content-Type',asset[1]+'; charset=utf-8');res.end(await readFile(path.join(root,'public',asset[0])));}catch{res.statusCode=500;res.end('РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ СЃС‚СЂР°РЅРёС†Сѓ');}
 });

@@ -2,6 +2,7 @@
 .env.*
 !.env.example
 work/
+dist/
 node_modules/
 .vercel/
 

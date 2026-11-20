@@ -1,7 +1,6 @@
 name: CI
 on:
   push:
-    branches: [main]
   pull_request:
   workflow_dispatch:
 permissions:
@@ -23,3 +22,5 @@ jobs:
           node-version: '24'
       - name: Verify source, configuration and API behavior
         run: npm run check
+      - name: Build Vercel static output
+        run: npm run build
